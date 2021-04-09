@@ -31,8 +31,7 @@ import { __, _x } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Layout from '../assets/js/components/layout/Layout';
-import AnalyticsDashboardWidgetTopPagesTable from '../assets/js/modules/analytics/components/dashboard/AnalyticsDashboardWidgetTopPagesTable';
-import { dashboardPopularPagesArgs, dashboardPopularPagesData } from '../assets/js/modules/analytics/datastore/__fixtures__';
+import LegacyAnalyticsDashboardWidgetTopPagesTable from '../assets/js/modules/analytics/components/dashboard/LegacyAnalyticsDashboardWidgetTopPagesTable';
 import { googlesitekit as analyticsDashboardData } from '../.storybook/data/wp-admin-admin.php-page=googlesitekit-module-analytics-googlesitekit';
 import { MODULES_ANALYTICS } from '../assets/js/modules/analytics/datastore/constants';
 import { WithTestRegistry } from '../tests/js/utils';
@@ -48,8 +47,6 @@ storiesOf( 'Global', module )
 				internalWebPropertyID: '123456789',
 				profileID: '123456789',
 			} );
-
-			dispatch( MODULES_ANALYTICS ).receiveGetReport( dashboardPopularPagesData, { options: dashboardPopularPagesArgs } );
 		};
 
 		// Load the datacache with data.
@@ -59,6 +56,7 @@ storiesOf( 'Global', module )
 				'Dashboard'
 			);
 		}, 250 );
+
 		return (
 			<WithTestRegistry callback={ setupRegistry } >
 				<Layout
@@ -70,7 +68,7 @@ storiesOf( 'Global', module )
 					footerCTALabel={ _x( 'Analytics', 'Service name', 'google-site-kit' ) }
 					footerCTALink="https://analytics.google.com"
 				>
-					<AnalyticsDashboardWidgetTopPagesTable />
+					<LegacyAnalyticsDashboardWidgetTopPagesTable />
 				</Layout>
 			</WithTestRegistry>
 		);

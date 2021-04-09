@@ -66,6 +66,7 @@ describe( 'core/user user-input-settings', () => {
 	beforeEach( () => {
 		registry = createTestRegistry();
 		store = registry.stores[ STORE_NAME ].store;
+		registry.dispatch( STORE_NAME ).receiveUserInputState( 'completed' );
 	} );
 
 	afterAll( () => {
@@ -81,19 +82,15 @@ describe( 'core/user user-input-settings', () => {
 			registry.dispatch( STORE_NAME ).receiveGetUserInputSettings( coreUserInputSettingsExpectedResponse );
 		} );
 
-		describe( 'setUserInputSettings', () => {
-			it( 'should correctly set new settings', () => {
-				const newValues = { postFrequency: [ 'weekly' ] };
-
-				registry.dispatch( STORE_NAME ).setUserInputSettings( newValues );
-				expect( store.getState() ).toMatchObject( { inputSettings: newValues } );
-			} );
-		} );
-
 		describe( 'setUserInputSetting', () => {
 			it( 'should correctly set new values for the setting', () => {
 				const settingID = 'goals';
-				const values = [ 'goal3', 'goal4', 'goal5' ];
+				const values = [
+					'              goal3',
+					'             goal4        ',
+					'goal5            ',
+					'goal6',
+				];
 
 				registry.dispatch( STORE_NAME ).setUserInputSetting( settingID, values );
 				expect( store.getState() ).toMatchObject( {
@@ -101,7 +98,7 @@ describe( 'core/user user-input-settings', () => {
 						...coreUserInputSettingsExpectedResponse,
 						[ settingID ]: {
 							...coreUserInputSettingsExpectedResponse[ settingID ],
-							values,
+							values: [ 'goal3', 'goal4', 'goal5', 'goal6' ],
 						},
 					},
 				} );

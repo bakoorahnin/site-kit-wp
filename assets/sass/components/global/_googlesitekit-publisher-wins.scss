@@ -84,6 +84,13 @@
 			display: inline-block;
 			max-width: 100%;
 		}
+
+		@media (max-width: $bp-mobileOnly ), (min-width: $bp-desktop) {
+
+			svg {
+				width: 200px;
+			}
+		}
 	}
 
 	.googlesitekit-publisher-win__detect {
@@ -135,4 +142,11 @@
 		vertical-align: bottom;
 	}
 
+	.googlesitekit-publisher-win__small-media {
+
+		svg {
+			max-height: 85px;
+			max-width: 85px;
+		}
+	}
 }

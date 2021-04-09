@@ -41,14 +41,34 @@ describe( 'SettingsApp', () => {
 		registry.dispatch( CORE_USER ).receiveGetAuthentication( { needsReauthentication: false } );
 		registry.dispatch( CORE_USER ).receiveConnectURL( 'test-url' );
 
-		provideModules( registry, [ {
-			slug: 'analytics',
-			name: 'Analytics',
-			active: true,
-			connected: true,
-			setupComplete: true,
-			SettingsEditComponent: () => <div data-testid="edit-component">edit</div>,
-		} ] );
+		provideModules( registry, [
+			{
+				slug: 'analytics',
+				active: true,
+				connected: true,
+				SettingsEditComponent: () => <div data-testid="edit-component">edit</div>,
+			},
+			{
+				slug: 'optimize',
+				active: true,
+				connected: true,
+			},
+			{
+				slug: 'tagmanager',
+				active: true,
+				connected: true,
+			},
+			{
+				slug: 'adsense',
+				active: true,
+				connected: true,
+			},
+			{
+				slug: 'pagespeed-insights',
+				active: true,
+				connected: true,
+			},
+		] );
 
 		global._googlesitekitLegacyData.modules.analytics = {
 			...global._googlesitekitLegacyData.modules.analytics,
@@ -137,6 +157,11 @@ describe( 'SettingsApp', () => {
 	} );
 
 	it( 'should change location hash & DOM correctly when tab is clicked and changed', async () => {
+		fetchMock.getOnce(
+			/^\/google-site-kit\/v1\/core\/user\/data\/tracking/,
+			{ body: { enabled: true }, status: 200 }
+		);
+
 		const { findByText, getAllByRole } = render( <SettingsApp />, { features, registry } );
 
 		fireEvent.click( getAllByRole( 'tab' )[ 1 ] );

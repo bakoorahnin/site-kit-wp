@@ -20,13 +20,14 @@
  * External dependencies
  */
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 
 /**
  * WordPress dependencies
  */
-import { useCallback, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
-import { ENTER } from '@wordpress/keycodes';
+import { useCallback, useRef, useState } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
+import { ENTER, BACKSPACE } from '@wordpress/keycodes';
 
 /**
  * Internal dependencies
@@ -35,62 +36,160 @@ import Data from 'googlesitekit-data';
 import { CORE_USER } from '../../googlesitekit/datastore/user/constants';
 import { Cell, Input, TextField } from '../../material-components';
 import Button from '../Button';
+import CloseIcon from '../../../svg/close.svg';
 import { COMMA } from '../../util/key-codes';
+import VisuallyHiden from '../VisuallyHidden';
 const { useSelect, useDispatch } = Data;
 
 export default function UserInputKeywords( { slug, max } ) {
+	const keywordsContainer = useRef();
+	const [ canDeleteKeyword, setCanDeleteKeyword ] = useState( false );
+
 	const values = useSelect( ( select ) => select( CORE_USER ).getUserInputSetting( slug ) || [] );
-	const [ keyword, setKeyword ] = useState( '' );
 	const { setUserInputSetting } = useDispatch( CORE_USER );
+
+	// Add an empty string if the values array is empty.
+	if ( values.length === 0 ) {
+		values.push( '' );
+	}
+
+	// Store values in local state to prevent
+	// https://github.com/google/site-kit-wp/issues/2900#issuecomment-814843972.
+	const [ localValues, setLocalValues ] = useState( values );
 
 	// Need to make sure that dependencies list always has the same number of elements.
 	const dependencies = values.concat( Array( max ) ).slice( 0, max );
 
-	const onKeywordChange = useCallback( ( { target } ) => {
-		if ( target.value[ target.value.length - 1 ] !== ',' ) {
-			setKeyword( target.value );
+	const focusInput = ( querySelector ) => {
+		const input = keywordsContainer.current.querySelector( querySelector );
+		if ( input ) {
+			input.focus();
 		}
+	};
+
+	const deleteKeyword = useCallback( ( index ) => {
+		updateKeywords( [
+			...values.slice( 0, index ),
+			...values.slice( index + 1 ),
+		] );
+		// After deleting a keyword, hitting backspace will delete the next keyword.
+		setCanDeleteKeyword( true );
+	}, dependencies, canDeleteKeyword );
+
+	const onKeywordDelete = useCallback( ( index ) => {
+		deleteKeyword( index );
 	}, dependencies );
 
-	const onKeyDown = useCallback( ( { keyCode } ) => {
-		if ( keyCode === ENTER || keyCode === COMMA ) {
-			const value = keyword.trim();
-			if ( value ) {
-				setUserInputSetting( slug, [ ...values, value ] );
-				setKeyword( '' );
-			}
-		}
-	}, [ keyword, ...dependencies ] );
+	const updateKeywords = useCallback( ( keywords ) => {
+		const EOT = String.fromCharCode( 4 );
+		let newKeywords = keywords
+			// Trim keywords to allow no empty spaces at the beginning and at max one space at the end.
+			.map( ( keyword ) => keyword.replace( /(\S)\s+$/, '$1 ' ).replace( /^\s+/, '' ) )
+			// EOT is added to the end to properly combine two sequential empty spaces at the end.
+			.concat( [ '', EOT ] )
+			.join( EOT )
+			.replace( new RegExp( `${ EOT }{3,}`, 'g' ), EOT ); // Combine two sequential empty spaces into one.
 
-	const onKeywordDelete = useCallback( ( keywordToDelete ) => {
-		setUserInputSetting( slug, values.filter( ( value ) => value !== keywordToDelete ) );
+		if ( newKeywords === EOT ) {
+			newKeywords = [ '' ];
+		} else {
+			newKeywords = newKeywords.split( EOT ).slice( 0, max );
+		}
+
+		setLocalValues( newKeywords );
+		setUserInputSetting( slug, newKeywords );
+	}, [ slug ] );
+
+	const onKeywordChange = useCallback( ( index, { target } ) => {
+		if ( target.value[ target.value.length - 1 ] === ',' ) {
+			return;
+		}
+
+		updateKeywords( [
+			...values.slice( 0, index ),
+			target.value,
+			...values.slice( index + 1 ),
+		] );
 	}, dependencies );
+
+	const onKeyDown = useCallback( ( index, { keyCode, target } ) => {
+		const nonEmptyValues = values.filter( ( value ) => value.length > 0 );
+		const nonEmptyValuesLength = nonEmptyValues.length;
+
+		if ( ( keyCode === ENTER || keyCode === COMMA ) && nonEmptyValues.length < max ) {
+			updateKeywords( [
+				...values.slice( 0, index + 1 ),
+				'',
+				...values.slice( index + 1 ),
+			] );
+
+			// A new keyword has been added. Pressing backspace now will remove the entire keyword.
+			setCanDeleteKeyword( true );
+			setTimeout( () => {
+				focusInput( `#${ slug }-keyword-${ index + 1 }` );
+			}, 50 );
+		}
+
+		if ( target.value.length === 0 && keyCode === BACKSPACE ) {
+			// The input is empty, so pressing backspace should delete the last keyword.
+			deleteKeyword( nonEmptyValuesLength - 1 );
+			setTimeout( () => {
+				focusInput( `#${ slug }-keyword-${ nonEmptyValuesLength - 1 }` );
+			}, 50 );
+			// After deleting a keyword, pressing backspace again should continue to delete keywords.
+			setCanDeleteKeyword( true );
+		} else {
+			// User is typing, so pressing backspace should delete the last character rather than the keyword.
+			setCanDeleteKeyword( false );
+		}
+	}, [ keywordsContainer.current, ...dependencies, canDeleteKeyword ] );
 
 	return (
 		<Cell lgStart={ 6 } lgSize={ 6 } mdSize={ 8 } smSize={ 4 }>
-			<div className="googlesitekit-user-input__text-options">
-				{ values.map( ( value ) => (
-					<div key={ value } className="googlesitekit-user-input__text-option">
-						{ value }
-						<Button text onClick={ onKeywordDelete.bind( null, value ) }>x</Button>
+			<div ref={ keywordsContainer } className="googlesitekit-user-input__text-options">
+				{ localValues.map( ( value, i ) => (
+					<div
+						key={ i }
+						className={ classnames( {
+							'googlesitekit-user-input__text-option': localValues.length > i + 1 || value.length > 0,
+						} ) }
+					>
+						<VisuallyHiden>
+							<label htmlFor={ `${ slug }-keyword-${ i }` } >
+								{ sprintf(
+									/* translators: %s is the keyword number; 1, 2, or 3 */
+									__( 'Keyword %s', 'google-site-kit' ),
+									i + 1, // Keys are zero-indexed; this starts keyword at "1".
+								) }
+							</label>
+						</VisuallyHiden>
+						<TextField
+							label={ __( 'Enter minimum one (1), maximum three (3) terms', 'google-site-kit' ) }
+							noLabel
+						>
+							<Input
+								id={ `${ slug }-keyword-${ i }` }
+								value={ value }
+								size={ value.length > 0 ? value.length : undefined }
+								onChange={ onKeywordChange.bind( null, i ) }
+								onKeyDown={ onKeyDown.bind( null, i ) }
+							/>
+						</TextField>
+
+						{ ( value.length > 0 || i + 1 < localValues.length ) && (
+							<Button
+								text
+								icon={ <CloseIcon width="11" height="11" /> }
+								onClick={ onKeywordDelete.bind( null, i ) }
+							/>
+						) }
 					</div>
 				) ) }
-
-				{ values.length !== max && (
-					<TextField
-						label={ __( 'Minimum one (1), maximum three (3) keywords', 'google-site-kit' ) }
-						noLabel
-					>
-						<Input
-							id={ `${ slug }-keywords` }
-							value={ keyword }
-							onChange={ onKeywordChange }
-							onKeyDown={ onKeyDown }
-						/>
-					</TextField>
-				) }
 			</div>
-			<p className="googlesitekit-user-input__note">{ __( 'Separate with commas or the Enter key', 'google-site-kit' ) }</p>
+
+			<p className="googlesitekit-user-input__note">
+				{ __( 'Separate with commas or the Enter key', 'google-site-kit' ) }
+			</p>
 		</Cell>
 	);
 }

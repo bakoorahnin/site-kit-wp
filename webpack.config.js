@@ -33,7 +33,6 @@ const WebpackBar = require( 'webpackbar' );
 const { DefinePlugin, ProvidePlugin } = require( 'webpack' );
 const CreateFileWebpack = require( 'create-file-webpack' );
 const ManifestPlugin = require( 'webpack-manifest-plugin' );
-const ImageminPlugin = require( 'imagemin-webpack' );
 const features = require( './feature-flags.json' );
 
 const projectPath = ( relativePath ) => {
@@ -151,6 +150,7 @@ const webpackConfig = ( env, argv ) => {
 				'googlesitekit-widgets': './assets/js/googlesitekit-widgets.js',
 				'googlesitekit-modules-adsense': './assets/js/googlesitekit-modules-adsense.js',
 				'googlesitekit-modules-analytics': './assets/js/googlesitekit-modules-analytics.js',
+				'googlesitekit-modules-analytics-4': './assets/js/googlesitekit-modules-analytics-4.js',
 				'googlesitekit-modules-pagespeed-insights': 'assets/js/googlesitekit-modules-pagespeed-insights.js',
 				'googlesitekit-modules-search-console': './assets/js/googlesitekit-modules-search-console.js',
 				'googlesitekit-modules-tagmanager': './assets/js/googlesitekit-modules-tagmanager.js',
@@ -187,30 +187,6 @@ const webpackConfig = ( env, argv ) => {
 			module: {
 				rules: [
 					...rules,
-					{
-						test: /\.(png|jpg)$/i,
-						use: [
-							{
-								loader: 'file-loader',
-								options: {
-									name: '[name].[ext]',
-									publicPath: 'images/',
-									outputPath: '../images',
-								},
-							},
-							{
-								loader: ImageminPlugin.loader,
-								options: {
-									imageminOptions: {
-										plugins: [
-											'jpegtran',
-											'optipng',
-										],
-									},
-								},
-							},
-						],
-					},
 				],
 			},
 			plugins: [

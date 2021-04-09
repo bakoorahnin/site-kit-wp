@@ -53,7 +53,36 @@ export const actions = {
 };
 
 export const controls = {
-	[ CHECK_ADBLOCKER ]: () => detectAnyAdblocker(),
+	[ CHECK_ADBLOCKER ]: async () => {
+		if ( await detectAnyAdblocker() ) {
+			return true;
+		}
+		// The above is good about detecting most adblockers.
+		// For the rest, we'll make a placeholder request to the favicon with some
+		// additional stuff in the query string to (hopefully) trigger a filter.
+		// If this throws, then the fetch request failed completely and we'll assume it was blocked.
+		try {
+			const params = [
+				// The name of the parameter here doesn't really matter
+				// since adblockers look at the URL as a whole.
+				// Note: this value must not be URL-encoded.
+				'google-site-kit=/adsense/pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
+				// Add a timestamp for cache-busting.
+				`timestamp=${ Date.now() }`,
+			];
+			await fetch(
+				`/favicon.ico?${ params.join( '&' ) }`,
+				{
+					credentials: 'omit',
+					// Don't follow any redirects; we only care about this request being blocked or not.
+					redirect: 'manual',
+				}
+			);
+		} catch {
+			return true;
+		}
+		return false;
+	},
 };
 
 export const reducer = ( state, { payload, type } ) => {

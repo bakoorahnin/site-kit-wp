@@ -24,12 +24,12 @@ import { addFilter } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { getSiteKitAdminURL, getModulesData } from '../../util';
+import { getModulesData } from '../../util';
 import { createAddToFilter } from '../../util/helpers';
-import AnalyticsDashboardWidget from './components/dashboard/AnalyticsDashboardWidget';
+import LegacyAnalyticsDashboardWidget from './components/dashboard/LegacyAnalyticsDashboardWidget';
 import LegacyAnalyticsDashboardWidgetTopLevel from './components/dashboard/LegacyAnalyticsDashboardWidgetTopLevel';
 import AnalyticsDashboardDetailsWidgetTopAcquisitionSources from './components/dashboard-details/AnalyticsDashboardDetailsWidgetTopAcquisitionSources';
-import AnalyticsAdSenseDashboardWidgetTopPagesTable from './components/dashboard/AnalyticsAdSenseDashboardWidgetTopPagesTable';
+import LegacyAnalyticsAdSenseDashboardWidgetTopPagesTable from './components/dashboard/LegacyAnalyticsAdSenseDashboardWidgetTopPagesTable';
 import LegacyAnalyticsDashboardWidgetPopularPagesTable from './components/dashboard/LegacyAnalyticsDashboardWidgetPopularPagesTable';
 import LegacyAdSenseDashboardWidgetTopPagesTableSmall from './components/dashboard/LegacyAdSenseDashboardWidgetTopPagesTableSmall';
 import LegacyDashboardAllTraffic from './components/dashboard/DashboardAllTrafficWidget/LegacyDashboardAllTraffic';
@@ -38,31 +38,12 @@ const slug = 'analytics';
 
 const modulesData = getModulesData();
 
-// If setup is not complete, show the signup flow.
-if ( ! modulesData[ slug ].setupComplete ) {
-	const {
-		reAuth,
-		currentScreen,
-	} = global._googlesitekitLegacyData.admin;
-	const id = currentScreen ? currentScreen.id : null;
-	if ( ! reAuth && 'site-kit_page_googlesitekit-module-analytics' === id ) {
-		// Setup incomplete: redirect to the setup flow.
-		global.location = getSiteKitAdminURL(
-			`googlesitekit-module-${ slug }`,
-			{
-				reAuth: true,
-				slug,
-			}
-		);
-	}
-}
-
 if ( modulesData.analytics.active ) {
-	const addAnalyticsDashboardWidget = createAddToFilter( <AnalyticsDashboardWidget /> );
+	const addAnalyticsDashboardWidget = createAddToFilter( <LegacyAnalyticsDashboardWidget /> );
 	const legacyDashboardAllTraffic = createAddToFilter( <LegacyDashboardAllTraffic /> );
 	const addLegacyAnalyticsDashboardWidgetTopLevel = createAddToFilter( <LegacyAnalyticsDashboardWidgetTopLevel /> );
 	const addAnalyticsDashboardDetailsWidget = createAddToFilter( <AnalyticsDashboardDetailsWidgetTopAcquisitionSources /> );
-	const addAnalyticsAdSenseTopPagesWidget = createAddToFilter( <AnalyticsAdSenseDashboardWidgetTopPagesTable /> );
+	const addAnalyticsAdSenseTopPagesWidget = createAddToFilter( <LegacyAnalyticsAdSenseDashboardWidgetTopPagesTable /> );
 	const addLegacyAnalyticsDashboardWidgetPopularPagesTable = createAddToFilter( <LegacyAnalyticsDashboardWidgetPopularPagesTable /> );
 	const addLegacyAdSenseDashboardWidgetTopPagesTableSmall = createAddToFilter( <LegacyAdSenseDashboardWidgetTopPagesTableSmall /> );
 

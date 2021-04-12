@@ -164,7 +164,6 @@ export default function LegacyAdSenseDashboardWidgetSiteStats( props ) {
 						chartType="LineChart"
 						data={ dataMap }
 						options={ options }
-						selectedColumns={ [ selectedStats ] }
 					/>
 				</Cell>
 			</Row>

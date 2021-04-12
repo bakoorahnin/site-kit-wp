@@ -72,9 +72,9 @@ export default function GoogleChart( props ) {
 		<div className="googlesitekit-chart-loading">
 			<PreviewBlock
 				className="googlesitekit-chart-loading__wrapper"
-				height={ loadingHeightToUse }
+				height={ `${ loadingHeightToUse }` }
 				shape={ loadingShape }
-				width={ loadingWidthToUse }
+				width={ `${ loadingWidthToUse }` }
 			/>
 		</div>
 	);

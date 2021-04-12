@@ -133,7 +133,6 @@ const Stats = ( {
 						chartType="LineChart"
 						data={ dataMap }
 						options={ options }
-						selectedColumns={ [ selectedStats ] }
 					/>
 				</Cell>
 			</Row>

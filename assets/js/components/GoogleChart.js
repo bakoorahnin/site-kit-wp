@@ -38,7 +38,6 @@ export default function GoogleChart( props ) {
 		chartType,
 		children,
 		className,
-		data,
 		getChartWrapper,
 		height,
 		loaded,
@@ -48,21 +47,9 @@ export default function GoogleChart( props ) {
 		onMouseOut,
 		onReady,
 		onSelect,
-		selectedColumns,
 		width,
 		...otherProps
 	} = props;
-
-	// If only certain columns should be displayed for the data set we have
-	// then filter out that data.
-	let filteredData;
-	if ( selectedColumns?.length > 0 ) {
-		filteredData = data.map( ( row ) => {
-			return row.filter( ( _columnValue, columnIndex ) => {
-				return columnIndex === 0 || selectedColumns.includes( columnIndex - 1 );
-			} );
-		} );
-	}
 
 	const loadingHeightToUse = loadingHeight || height;
 	const loadingWidthToUse = loadingWidth || width;
@@ -160,7 +147,6 @@ export default function GoogleChart( props ) {
 				chartEvents={ combinedChartEvents }
 				chartType={ chartType }
 				className="googlesitekit-chart__inner"
-				data={ filteredData !== undefined ? filteredData : data }
 				loader={ loader }
 				height={ height }
 				getChartWrapper={ ( chartWrapper, google ) => {
@@ -193,5 +179,4 @@ export default function GoogleChart( props ) {
 GoogleChart.defaultProps = {
 	...Chart.defaultProps,
 	loaded: true,
-	selectedColumns: undefined,
 };

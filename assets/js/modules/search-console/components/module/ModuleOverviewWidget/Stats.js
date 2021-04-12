@@ -125,7 +125,6 @@ const Stats = ( { data, metrics, selectedStats } ) => {
 						chartType="LineChart"
 						data={ googleChartData }
 						options={ options }
-						selectedColumns={ [ selectedStats ] }
 					/>
 				</Cell>
 			</Row>

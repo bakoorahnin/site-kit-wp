@@ -144,7 +144,6 @@ class LegacyAnalyticsDashboardWidgetSiteStats extends Component {
 							chartType="LineChart"
 							data={ dataMap }
 							options={ options }
-							selectedColumns={ selectedStats }
 						/>
 					</div>
 				</div>

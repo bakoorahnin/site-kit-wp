@@ -112,7 +112,7 @@ class LegacySearchConsoleDashboardWidgetSiteStats extends Component {
 	}
 
 	render() {
-		const { data, selectedStats } = this.props;
+		const { data } = this.props;
 
 		if ( ! data || ! data.length ) {
 			return null;
@@ -129,7 +129,6 @@ class LegacySearchConsoleDashboardWidgetSiteStats extends Component {
 							chartType="LineChart"
 							data={ processedData.dataMap }
 							options={ options }
-							selectedColumns={ selectedStats }
 						/>
 					</div>
 				</div>
